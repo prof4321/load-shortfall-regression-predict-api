@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 import pickle
 import json
+from sklearn.preprocessing import StandardScaler
 
 def _preprocess_data(data):
     """Private helper function to preprocess data for model prediction.
@@ -57,12 +58,30 @@ def _preprocess_data(data):
     # receive marks for submitting this code in an unchanged state.
     # ---------------------------------------------------------------
 
-    # ----------- Replace this code with your own preprocessing steps --------
-    predict_vector = feature_vector_df[['Madrid_wind_speed','Bilbao_rain_1h','Valencia_wind_speed']]
+    # ----------- Replace this code with your own preprocessing steps -------
+    
+    # Creating new features from time column
+    feature_vector_df['time'] = pd.to_datetime(feature_vector_df.index)
+    feature_vector_df['Year'] = feature_vector_df['time'].dt.year
+    feature_vector_df['Month'] = feature_vector_df['time'].dt.month
+    feature_vector_df['Day'] = feature_vector_df['time'].dt.day
+    feature_vector_df['Day_of_week'] = feature_vector_df['time'].dt.dayofweek
+    feature_vector_df['Hour'] = feature_vector_df['time'].dt.hour
+    feature_vector_df.drop('time', axis=1, inplace=True)
+    # ------------------------------------------------------------------------
+
+    cont_features_selected = [
+        'Month', 'Bilbao_weather_id', 'Hour', 'Year', 'Madrid_pressure', 'Day', 'Barcelona_weather_id', 'Seville_weather_id', 'Valencia_humidity', 'Bilbao_pressure', 'Madrid_weather_id', 'Valencia_snow_3h', 'Barcelona_rain_3h', 'Madrid_rain_1h', 'Seville_rain_1h', 'Bilbao_snow_3h', 'Seville_rain_3h', 'Barcelona_pressure', 'Seville_wind_speed', 'Barcelona_rain_1h', 'Bilbao_wind_speed', 'Madrid_clouds_all', 'Seville_clouds_all', 'Barcelona_wind_speed', 'Barcelona_wind_deg', 'Bilbao_wind_deg', 'Bilbao_clouds_all', 'Valencia_wind_speed', 'Madrid_humidity', 'Madrid_wind_speed', 'Bilbao_rain_1h', 'Day_of_week', 'Seville_humidity'
+    ]
+
+    X = feature_vector_df[cont_features_selected]
+    # Scaled data by standardation
+    scaler = StandardScaler()
+
+    predict_vector = scaler.fit_transform(X)
     # ------------------------------------------------------------------------
 
     return predict_vector
-
 def load_model(path_to_model:str):
     """Adapter function to load our pretrained model into memory.
 
